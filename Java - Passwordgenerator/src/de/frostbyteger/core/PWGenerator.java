@@ -2,10 +2,6 @@ package de.frostbyteger.core;
 import java.util.Random;
 
 /**
- * 
- */
-
-/**
  * @author Kevin
  * @version 1.00
  * TODO: Implement utf8 and unicode charsets

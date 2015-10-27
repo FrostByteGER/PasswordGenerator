@@ -1,6 +1,9 @@
 package de.frostbyteger.gui;
 import java.awt.BorderLayout;
 import java.awt.Frame;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -57,16 +60,18 @@ public class PasswordGenGUI implements ActionListener{
 	private JTextArea taPw;
 	private JCheckBox chckbxUseChars;
 	private JSpinner spinner;
+	private JCheckBox chckbxUseAlphaNumbers;
+	private JButton btnCopyToClipboard;
 
 
 	/**
 	 * Create the frame.
 	 */
 	public PasswordGenGUI() {
-		frame = new JFrame("Password Generator v1.00");
+		frame = new JFrame("Password Generator v1.01");
 		frame.setResizable(false);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setBounds(100, 100, 450, 300);
+		frame.setBounds(100, 100, 500, 300);
 		
 		menuBar = new JMenuBar();
 		frame.setJMenuBar(menuBar);
@@ -117,7 +122,7 @@ public class PasswordGenGUI implements ActionListener{
 		tfUsed = new JTextField();
 		tfUsed.setToolTipText("Enter letters or numbers with which the password should be generated");
 		tfUsed.setEditable(false);
-		tfUsed.setBounds(10, 25, 404, 20);
+		tfUsed.setBounds(10, 25, 437, 20);
 		panel.add(tfUsed);
 		tfUsed.setColumns(10);
 		
@@ -128,7 +133,7 @@ public class PasswordGenGUI implements ActionListener{
 		tfUnused = new JTextField();
 		tfUnused.setToolTipText("Enter characters or numbers you don't want in your password");
 		tfUnused.setColumns(10);
-		tfUnused.setBounds(10, 61, 404, 20);
+		tfUnused.setBounds(10, 61, 437, 20);
 		panel.add(tfUnused);
 		
 		bgp = new ButtonGroup();
@@ -161,7 +166,7 @@ public class PasswordGenGUI implements ActionListener{
 		taPw = new JTextArea();
 		taPw.setToolTipText("Your generated password");
 		taPw.setEditable(false);
-		taPw.setBounds(10, 121, 404, 22);
+		taPw.setBounds(10, 121, 437, 22);
 		panel.add(taPw);
 		
 		chckbxUseChars = new JCheckBox("Use entered characters only");
@@ -177,12 +182,26 @@ public class PasswordGenGUI implements ActionListener{
 		
 		spinner = new JSpinner(new SpinnerNumberModel(new Integer(16), new Integer(0), null, new Integer(1)));
 		spinner.setToolTipText("The length of your password");
-		spinner.setBounds(303, 166, 111, 20);
+		spinner.setBounds(303, 166, 144, 20);
 		///Prevents that the user can input non-integers.
 		JFormattedTextField txt = ((JSpinner.NumberEditor) spinner.getEditor()).getTextField();
 		((NumberFormatter) txt.getFormatter()).setAllowsInvalid(false);
 		///
 		panel.add(spinner);
+		
+		chckbxUseAlphaNumbers = new JCheckBox("Use A-Z a-z and 0-9");
+		chckbxUseAlphaNumbers.addActionListener(this);
+		chckbxUseAlphaNumbers.setToolTipText("Check this to generate a password with standard A-Z, a-z and 0-9 characters");
+		chckbxUseAlphaNumbers.setActionCommand("uselatinnumbers");
+		chckbxUseAlphaNumbers.setBounds(101, 171, 196, 23);
+		panel.add(chckbxUseAlphaNumbers);
+		
+		btnCopyToClipboard = new JButton("Copy to Clipboard");
+		btnCopyToClipboard.setEnabled(false);
+		btnCopyToClipboard.setActionCommand("copy");
+		btnCopyToClipboard.addActionListener(this);
+		btnCopyToClipboard.setBounds(307, 197, 140, 23);
+		panel.add(btnCopyToClipboard);
 		
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
@@ -205,10 +224,28 @@ public class PasswordGenGUI implements ActionListener{
 				rdbtnUtf.setEnabled(false);
 				rdbtnUnicode.setEnabled(false);
 			}
+		}else if(ae.getActionCommand().equals("uselatinnumbers")){
+			if(!chckbxUseAlphaNumbers.isSelected()){
+				chckbxUseChars.setEnabled(true);
+				tfUsed.setText("");
+				tfUsed.setEditable(false);
+				tfUnused.setEditable(true);
+				rdbtnAscii.setEnabled(true);
+				rdbtnUtf.setEnabled(true);
+				rdbtnUnicode.setEnabled(true);
+			}else{
+				chckbxUseChars.setEnabled(false);
+				tfUsed.setText("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
+				tfUsed.setEditable(false);
+				tfUnused.setEditable(false);
+				rdbtnAscii.setEnabled(false);
+				rdbtnUtf.setEnabled(false);
+				rdbtnUnicode.setEnabled(false);
+			}
 		}else if(ae.getActionCommand().equals("generate")){
 			String pw = null;
 			PWGenerator pwg = new PWGenerator();
-			if(!chckbxUseChars.isSelected()){
+			if(!chckbxUseChars.isSelected() && !chckbxUseAlphaNumbers.isSelected()){
 				int state = 0;
 				if(rdbtnAscii.isSelected()){
 					state = 1;
@@ -226,15 +263,23 @@ public class PasswordGenGUI implements ActionListener{
 			taPw.setText(pw);
 			taPw.requestFocus();
 			taPw.selectAll();
+			if(!btnCopyToClipboard.isEnabled()){
+				btnCopyToClipboard.setEnabled(true);
+			}
 		}else if(ae.getActionCommand().equals("clear")){
 			taPw.setText("");
+			btnCopyToClipboard.setEnabled(false);
 		}else if(ae.getActionCommand().equals("about")){
-			JOptionPane.showMessageDialog(frame,"Password Generator v1.00 \nMade by Kevin Kügler");
+			JOptionPane.showMessageDialog(frame,"Password Generator v1.01 \nMade by Kevin Kügler");
 		}else if(ae.getActionCommand().equals("quit")){
 			Frame[] frames = Frame.getFrames();  
 	        for (Frame f:frames){
 	        	f.dispose();
 	        }  
+		}else if(ae.getActionCommand().equals("copy")){
+			StringSelection stringSelection = new StringSelection(taPw.getText());
+			Clipboard clpbrd = Toolkit.getDefaultToolkit().getSystemClipboard();
+			clpbrd.setContents(stringSelection, null);
 		}
 		
 	}
