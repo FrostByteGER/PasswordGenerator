@@ -212,12 +212,14 @@ public class PasswordGenGUI implements ActionListener{
 	public void actionPerformed(ActionEvent ae) {
 		if(ae.getActionCommand().equals("useEntered")){
 			if(!chckbxUseChars.isSelected()){
+				chckbxUseAlphaNumbers.setEnabled(true);
 				tfUsed.setEditable(false);
 				tfUnused.setEditable(true);
 				rdbtnAscii.setEnabled(true);
 				rdbtnUtf.setEnabled(true);
 				rdbtnUnicode.setEnabled(true);
 			}else{
+				chckbxUseAlphaNumbers.setEnabled(false);
 				tfUsed.setEditable(true);
 				tfUnused.setEditable(false);
 				rdbtnAscii.setEnabled(false);
